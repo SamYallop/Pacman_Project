@@ -20,6 +20,13 @@ using namespace S2D;
 class Pacman : public Game
 {
 private:
+
+	// Constant data for Game Variables
+	const float _cPacmanSpeed;
+
+	// Constant for pacman width
+	const int _SpriteWidth = 32;
+
 	// Data to represent Pacman
 	Vector2* _pacmanPosition;
 	Rect* _pacmanSourceRect;
@@ -33,6 +40,14 @@ private:
 
 	// Position for String
 	Vector2* _stringPosition;
+
+	//Data for Menu
+	Texture2D* _menuBackground;
+	Rect* _menuRectangle;
+	Vector2* _menuStringPosition;
+	bool _paused;
+	bool _pKeyDown;
+
 
 public:
 	/// <summary> Constructs the Pacman class. </summary>
