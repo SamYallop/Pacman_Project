@@ -47,6 +47,7 @@ private:
 	Vector2* _menuStringPosition;
 	bool _paused;
 	bool _pKeyDown;
+	bool _start;
 
 
 public:
