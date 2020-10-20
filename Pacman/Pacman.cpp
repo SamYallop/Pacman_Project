@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f)
+Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), _cPacmanFrameTime(250), _cMunchieFrameTime(500)
 {
 	_frameCount = 0;
 	_paused = false;
@@ -13,6 +13,10 @@ Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f)
 	Input::Initialise();
 	// Start the Game Loop - This calls Update and Draw in game loop
 	Graphics::StartGameLoop();
+	_pacmanDirection = 0;
+	_pacmanCurrentFrameTime = 0;
+	_pacmanFrame = 0;
+	_munchieCurrentFrameTime = 0;
 }
 
 Pacman::~Pacman()
@@ -69,20 +73,32 @@ void Pacman::Update(int elapsedTime)
 
 			// Checks if Right Arrow key is pressed
 			if (keyboardState->IsKeyDown(Input::Keys::RIGHT))
+			{
 				_pacmanPosition->X += _cPacmanSpeed * elapsedTime; //Moves Pacman across X axis
+				_pacmanDirection = 0;
+			}
 
 			// Checks if Left Arrow key is pressed
 			else if (keyboardState->IsKeyDown(Input::Keys::LEFT))
+			{
 				_pacmanPosition->X += -_cPacmanSpeed * elapsedTime; //Moves Pacman across X axis
+				_pacmanDirection = 2;
+			}
 
 			// Checks if Up Arrow key is pressed
 			else if (keyboardState->IsKeyDown(Input::Keys::UP))
+			{
 				_pacmanPosition->Y += -_cPacmanSpeed * elapsedTime; //Moves Pacman across Y axis
+				_pacmanDirection = 3;
+			}
 
 			// Checks if Down Arrow key is pressed
 			else if (keyboardState->IsKeyDown(Input::Keys::DOWN))
+			{
 				_pacmanPosition->Y += _cPacmanSpeed * elapsedTime; //Moves Pacman across Y axis
-
+				_pacmanDirection = 1;
+			}
+				
 			// Checks if Pacman is trying to dissapear
 			if (_pacmanPosition->X + _pacmanSourceRect->Width > Graphics::GetViewportWidth()) //1024 is game width
 			{
@@ -152,6 +168,21 @@ void Pacman::Update(int elapsedTime)
 		}
 		if (keyboardState->IsKeyUp(Input::Keys::P))
 			_pKeyDown = false;
+
+		_pacmanCurrentFrameTime += elapsedTime;
+
+		if (_pacmanCurrentFrameTime > _cPacmanFrameTime)
+		{
+			_pacmanFrame++;
+
+			if (_pacmanFrame >= 2)
+				_pacmanFrame = 0;
+
+			_pacmanCurrentFrameTime = 0;
+		}
+
+		_pacmanSourceRect->Y = _pacmanSourceRect->Height * _pacmanDirection;
+		_pacmanSourceRect->X = _pacmanSourceRect->Width * _pacmanFrame;
 	}
 }
 
