@@ -72,15 +72,15 @@ void Pacman::Update(int elapsedTime)
 				_pacmanPosition->X += _cPacmanSpeed * elapsedTime; //Moves Pacman across X axis
 
 			// Checks if Left Arrow key is pressed
-			if (keyboardState->IsKeyDown(Input::Keys::LEFT))
+			else if (keyboardState->IsKeyDown(Input::Keys::LEFT))
 				_pacmanPosition->X += -_cPacmanSpeed * elapsedTime; //Moves Pacman across X axis
 
 			// Checks if Up Arrow key is pressed
-			if (keyboardState->IsKeyDown(Input::Keys::UP))
+			else if (keyboardState->IsKeyDown(Input::Keys::UP))
 				_pacmanPosition->Y += -_cPacmanSpeed * elapsedTime; //Moves Pacman across Y axis
 
 			// Checks if Down Arrow key is pressed
-			if (keyboardState->IsKeyDown(Input::Keys::DOWN))
+			else if (keyboardState->IsKeyDown(Input::Keys::DOWN))
 				_pacmanPosition->Y += _cPacmanSpeed * elapsedTime; //Moves Pacman across Y axis
 
 			// Checks if Pacman is trying to dissapear
