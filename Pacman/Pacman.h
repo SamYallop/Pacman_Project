@@ -37,7 +37,7 @@ private:
 	const int _cPacmanFrameTime;
 
 	// Data to represent Munchie
-	int _frameCount;
+	int  _munchieFrameCount;
 	Rect* _munchieRect;
 	Texture2D* _munchieBlueTexture;
 	Texture2D* _munchieInvertedTexture;

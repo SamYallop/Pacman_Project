@@ -4,7 +4,7 @@
 
 Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), _cPacmanFrameTime(250), _cMunchieFrameTime(500)
 {
-	_frameCount = 0;
+	_munchieFrameCount = 0;
 	_paused = false;
 	_pKeyDown = false;
 	//Initialise important Game aspects
@@ -158,7 +158,7 @@ void Pacman::Update(int elapsedTime)
 				// Pacman hit right wall - reset his position
 				//_pacmanPosition->Y = 788 - _pacmanSourceRect->Height;
 			//}
-			_frameCount++;
+			_munchieFrameCount++;
 		}
 
 		if (keyboardState->IsKeyDown(Input::Keys::P) && !_pKeyDown)
@@ -181,6 +181,18 @@ void Pacman::Update(int elapsedTime)
 			_pacmanCurrentFrameTime = 0;
 		}
 
+		_munchieCurrentFrameTime += elapsedTime;
+
+		if (_munchieCurrentFrameTime > _cMunchieFrameTime)
+		{
+			_munchieFrameCount++;
+
+			if (_munchieFrameCount >= 2)
+				_munchieFrameCount = 0;
+
+			_munchieCurrentFrameTime = 0;
+		}
+
 		_pacmanSourceRect->Y = _pacmanSourceRect->Height * _pacmanDirection;
 		_pacmanSourceRect->X = _pacmanSourceRect->Width * _pacmanFrame;
 	}
@@ -195,7 +207,7 @@ void Pacman::Draw(int elapsedTime)
 	SpriteBatch::BeginDraw(); // Starts Drawing
 	SpriteBatch::Draw(_pacmanTexture, _pacmanPosition, _pacmanSourceRect); // Draws Pacman
 
-	if (_frameCount < 30)
+	if (_munchieFrameCount == 0)
 	{
 		// Draws Red Munchie
 		SpriteBatch::Draw(_munchieInvertedTexture, _munchieRect, nullptr, Vector2::Zero, 1.0f, 0.0f, Color::White, SpriteEffect::NONE);
@@ -209,8 +221,8 @@ void Pacman::Draw(int elapsedTime)
 		
 		//_frameCount++;
 
-		if (_frameCount >= 60)
-			_frameCount = 0;
+		//if (_frameCount >= 60)
+		//	_frameCount = 0;
 	}
 	
 	// Draws String
