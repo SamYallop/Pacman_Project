@@ -21,6 +21,16 @@ class Pacman : public Game
 {
 private:
 
+	//Input methods
+	void Input(int elapsedTime, Input::KeyboardState* state);
+	//Check methods
+	void CheckPaused(Input::KeyboardState* state, Input::Keys pauseKey);
+	void CheckStart(Input::KeyboardState* state, Input::Keys startKey);
+	void CheckViewportCollision();
+	//Update methods
+	void UpdatePacman(int elapsedTime);
+	void UpdateMunchie(int elapsedTime);
+
 	// Constant data for Game Variables
 	const float _cPacmanSpeed;
 
@@ -73,4 +83,5 @@ public:
 
 	/// <summary> Called every frame - draw game here. </summary>
 	void virtual Draw(int elapsedTime);
+
 };

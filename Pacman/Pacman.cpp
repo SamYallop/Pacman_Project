@@ -62,141 +62,135 @@ void Pacman::Update(int elapsedTime)
 	// Gets the current state of the keyboard
 	Input::KeyboardState* keyboardState = Input::Keyboard::GetState();
 	if (keyboardState->IsKeyDown(Input::Keys::SPACE))
+	{
 		_start = true;
-
+	}
+	
 	if (_start)
 	{
-
+		CheckPaused(keyboardState, Input::Keys::P);
+		
 		if (!_paused)
 		{
-
-
-			// Checks if Right Arrow key is pressed
-			if (keyboardState->IsKeyDown(Input::Keys::RIGHT))
-			{
-				_pacmanPosition->X += _cPacmanSpeed * elapsedTime; //Moves Pacman across X axis
-				_pacmanDirection = 0;
-			}
-
-			// Checks if Left Arrow key is pressed
-			else if (keyboardState->IsKeyDown(Input::Keys::LEFT))
-			{
-				_pacmanPosition->X += -_cPacmanSpeed * elapsedTime; //Moves Pacman across X axis
-				_pacmanDirection = 2;
-			}
-
-			// Checks if Up Arrow key is pressed
-			else if (keyboardState->IsKeyDown(Input::Keys::UP))
-			{
-				_pacmanPosition->Y += -_cPacmanSpeed * elapsedTime; //Moves Pacman across Y axis
-				_pacmanDirection = 3;
-			}
-
-			// Checks if Down Arrow key is pressed
-			else if (keyboardState->IsKeyDown(Input::Keys::DOWN))
-			{
-				_pacmanPosition->Y += _cPacmanSpeed * elapsedTime; //Moves Pacman across Y axis
-				_pacmanDirection = 1;
-			}
-				
-			// Checks if Pacman is trying to dissapear
-			if (_pacmanPosition->X + _pacmanSourceRect->Width > Graphics::GetViewportWidth()) //1024 is game width
-			{
-				// Pacman hit right wall - reset his position
-				_pacmanPosition->X = Graphics::GetViewportWidth() - _pacmanSourceRect->Width;
-			}
-
-			/* Checks if Pacman is trying to dissapear
-			This code is for wrap around the map */
-			//if (_pacmanPosition->X + _pacmanSourceRect->Width > 1044) //1024 is game width
-			//{
-				// Pacman hit right wall - reset his position
-				//_pacmanPosition->X = 0 - _pacmanSourceRect->Width;
-			//}
-
-			// Checks if Pacman is trying to dissapear
-			if (_pacmanPosition->X + _pacmanSourceRect->Width < _SpriteWidth) //32 is value of left wall
-			{
-				// Pacman hit left wall - reset his position
-				_pacmanPosition->X = _SpriteWidth - _pacmanSourceRect->Width;
-			}
-
-			/* Checks if Pacman is trying to dissapear
-			This code is for wrap around the map */
-			//if (_pacmanPosition->X + _pacmanSourceRect->Width < 0) //1024 is game width
-			//{
-				// Pacman hit right wall - reset his position
-				//_pacmanPosition->X = 1044 - _pacmanSourceRect->Width;
-			//}
-
-			// Checks if Pacman is trying to dissapear
-			if (_pacmanPosition->Y + _pacmanSourceRect->Height > Graphics::GetViewportHeight()) //768 is bottom of map
-			{
-				// Pacman hit right wall - reset his position
-				_pacmanPosition->Y = Graphics::GetViewportHeight() - _pacmanSourceRect->Height;
-			}
-
-			/* Checks if Pacman is trying to dissapear
-			This code is for wrap around the map */
-			//if (_pacmanPosition->Y + _pacmanSourceRect->Height > 788) //768 is bottom of map
-			//{
-				// Pacman hit right wall - reset his position
-				//_pacmanPosition->Y = 12 - _pacmanSourceRect->Height;
-			//}
-
-			// Checks if Pacman is trying to dissapear
-			if (_pacmanPosition->Y + _pacmanSourceRect->Height < _SpriteWidth) //32 is top of map
-			{
-				// Pacman hit right wall - reset his position
-				_pacmanPosition->Y = _SpriteWidth - _pacmanSourceRect->Height;
-			}
-
-			/* Checks if Pacman is trying to dissapear
-			This code is for wrap around the map */
-			//if (_pacmanPosition->Y + _pacmanSourceRect->Height < 12) //768 is bottom of map
-			//{
-				// Pacman hit right wall - reset his position
-				//_pacmanPosition->Y = 788 - _pacmanSourceRect->Height;
-			//}
-			_munchieFrameCount++;
+			Input(elapsedTime, keyboardState);
+			UpdatePacman(elapsedTime);
+			UpdateMunchie(elapsedTime);
+			CheckViewportCollision();
 		}
 
-		if (keyboardState->IsKeyDown(Input::Keys::P) && !_pKeyDown)
-		{
-			_pKeyDown = true;
-			_paused = !_paused;
-		}
-		if (keyboardState->IsKeyUp(Input::Keys::P))
-			_pKeyDown = false;
-
-		_pacmanCurrentFrameTime += elapsedTime;
-
-		if (_pacmanCurrentFrameTime > _cPacmanFrameTime)
-		{
-			_pacmanFrame++;
-
-			if (_pacmanFrame >= 2)
-				_pacmanFrame = 0;
-
-			_pacmanCurrentFrameTime = 0;
-		}
-
-		_munchieCurrentFrameTime += elapsedTime;
-
-		if (_munchieCurrentFrameTime > _cMunchieFrameTime)
-		{
-			_munchieFrameCount++;
-
-			if (_munchieFrameCount >= 2)
-				_munchieFrameCount = 0;
-
-			_munchieCurrentFrameTime = 0;
-		}
-
-		_pacmanSourceRect->Y = _pacmanSourceRect->Height * _pacmanDirection;
-		_pacmanSourceRect->X = _pacmanSourceRect->Width * _pacmanFrame;
 	}
 }
+
+void Pacman::Input(int elapsedTime, Input::KeyboardState* state)
+{
+	Input::KeyboardState* keyboardState = Input::Keyboard::GetState();
+	
+	// Checks if Right Arrow key is pressed
+	if (keyboardState->IsKeyDown(Input::Keys::RIGHT))
+	{
+		_pacmanPosition->X += _cPacmanSpeed * elapsedTime; //Moves Pacman across X axis
+		_pacmanDirection = 0;
+	}
+
+	// Checks if Left Arrow key is pressed
+	else if (keyboardState->IsKeyDown(Input::Keys::LEFT))
+	{
+		_pacmanPosition->X += -_cPacmanSpeed * elapsedTime; //Moves Pacman across X axis
+		_pacmanDirection = 2;
+	}
+
+	// Checks if Up Arrow key is pressed
+	else if (keyboardState->IsKeyDown(Input::Keys::UP))
+	{
+		_pacmanPosition->Y += -_cPacmanSpeed * elapsedTime; //Moves Pacman across Y axis
+		_pacmanDirection = 3;
+	}
+
+	// Checks if Down Arrow key is pressed
+	else if (keyboardState->IsKeyDown(Input::Keys::DOWN))
+	{
+		_pacmanPosition->Y += _cPacmanSpeed * elapsedTime; //Moves Pacman across Y axis
+		_pacmanDirection = 1;
+	}
+}
+
+void Pacman::CheckPaused(Input::KeyboardState* state, Input::Keys pauseKey)
+{
+	Input::KeyboardState* keyboardState = Input::Keyboard::GetState();
+	
+	if (keyboardState->IsKeyDown(Input::Keys::P) && !_pKeyDown)
+	{
+		_pKeyDown = true;
+		_paused = !_paused;
+	}
+	if (keyboardState->IsKeyUp(Input::Keys::P))
+		_pKeyDown = false;
+}
+
+void Pacman::UpdatePacman(int elapsedTime)
+{
+	_pacmanCurrentFrameTime += elapsedTime;
+
+	if (_pacmanCurrentFrameTime > _cPacmanFrameTime)
+	{
+		_pacmanFrame++;
+
+		if (_pacmanFrame >= 2)
+			_pacmanFrame = 0;
+
+		_pacmanCurrentFrameTime = 0;
+	}
+}
+
+void Pacman::UpdateMunchie(int elapsedTime)
+{
+	_munchieCurrentFrameTime += elapsedTime;
+
+	if (_munchieCurrentFrameTime > _cMunchieFrameTime)
+	{
+		_munchieFrameCount++;
+
+		if (_munchieFrameCount >= 2)
+			_munchieFrameCount = 0;
+
+		_munchieCurrentFrameTime = 0;
+	}
+}
+
+void Pacman::CheckViewportCollision()
+{
+	// Checks if Pacman is trying to dissapear
+	if (_pacmanPosition->X + _pacmanSourceRect->Width > Graphics::GetViewportWidth()) //1024 is game width
+	{
+		// Pacman hit right wall - reset his position
+		_pacmanPosition->X = Graphics::GetViewportWidth() - _pacmanSourceRect->Width;
+	}
+
+	// Checks if Pacman is trying to dissapear
+	if (_pacmanPosition->X + _pacmanSourceRect->Width < _SpriteWidth) //32 is value of left wall
+	{
+		// Pacman hit left wall - reset his position
+		_pacmanPosition->X = _SpriteWidth - _pacmanSourceRect->Width;
+	}
+
+	// Checks if Pacman is trying to dissapear
+	if (_pacmanPosition->Y + _pacmanSourceRect->Height > Graphics::GetViewportHeight()) //768 is bottom of map
+	{
+		// Pacman hit right wall - reset his position
+		_pacmanPosition->Y = Graphics::GetViewportHeight() - _pacmanSourceRect->Height;
+	}
+
+	// Checks if Pacman is trying to dissapear
+	if (_pacmanPosition->Y + _pacmanSourceRect->Height < _SpriteWidth) //32 is top of map
+	{
+		// Pacman hit right wall - reset his position
+		_pacmanPosition->Y = _SpriteWidth - _pacmanSourceRect->Height;
+	}
+
+	_pacmanSourceRect->Y = _pacmanSourceRect->Height * _pacmanDirection;
+	_pacmanSourceRect->X = _pacmanSourceRect->Width * _pacmanFrame;
+}
+
 
 void Pacman::Draw(int elapsedTime)
 {
@@ -250,3 +244,39 @@ void Pacman::Draw(int elapsedTime)
 
 	SpriteBatch::EndDraw(); // Ends Drawing
 }
+
+
+
+
+
+/* Checks if Pacman is trying to dissapear
+This code is for wrap around the map */
+//if (_pacmanPosition->X + _pacmanSourceRect->Width > 1044) //1024 is game width
+//{
+	// Pacman hit right wall - reset his position
+	//_pacmanPosition->X = 0 - _pacmanSourceRect->Width;
+//}
+
+/* Checks if Pacman is trying to dissapear
+This code is for wrap around the map */
+//if (_pacmanPosition->X + _pacmanSourceRect->Width < 0) //1024 is game width
+//{
+	// Pacman hit right wall - reset his position
+	//_pacmanPosition->X = 1044 - _pacmanSourceRect->Width;
+//}
+
+/* Checks if Pacman is trying to dissapear
+This code is for wrap around the map */
+//if (_pacmanPosition->Y + _pacmanSourceRect->Height > 788) //768 is bottom of map
+//{
+	// Pacman hit right wall - reset his position
+	//_pacmanPosition->Y = 12 - _pacmanSourceRect->Height;
+//}
+
+/* Checks if Pacman is trying to dissapear
+This code is for wrap around the map */
+//if (_pacmanPosition->Y + _pacmanSourceRect->Height < 12) //768 is bottom of map
+//{
+	// Pacman hit right wall - reset his position
+	//_pacmanPosition->Y = 788 - _pacmanSourceRect->Height;
+//}
