@@ -247,7 +247,7 @@ void Pacman::Draw(int elapsedTime)
 
 
 
-
+//Change code in CheckViewportCollision() to code below to allow pacman to cross to otherside of screen instead of colliding
 
 /* Checks if Pacman is trying to dissapear
 This code is for wrap around the map */
