@@ -11,8 +11,43 @@
 // Just need to include main header file
 #include "S2D/S2D.h"
 
+#define MUNCHIECOUNT 50
+
 // Reduces the amount of typing by including all classes in S2D namespace
 using namespace S2D;
+
+// Structure Definition
+
+struct Player
+{
+	float speedMultiplier;
+	int currentFrameTime;
+	int direction;
+	int frame;
+	Rect* sourceRect;
+	Texture2D* texture;
+	Vector2* position;
+};
+
+struct Enemy
+{
+	int  frameCount;
+	Rect* rect;
+	Texture2D* blueTexture;
+	Texture2D* invertedTexture;
+	int frame;
+	int currentFrameTime;
+};
+
+struct Menu
+{
+	Texture2D* background;
+	Rect* rectangle;
+	Vector2* stringPosition;
+	bool paused;
+	bool pKeyDown;
+	bool start;
+};
 
 // Declares the Pacman class which inherits from the Game class.
 // This allows us to overload the Game class methods to help us
@@ -29,7 +64,7 @@ private:
 	void CheckViewportCollision();
 	//Update methods
 	void UpdatePacman(int elapsedTime);
-	void UpdateMunchie(int elapsedTime);
+	void UpdateMunchies(int elapsedTime);
 
 	// Constant data for Game Variables
 	const float _cPacmanSpeed;
@@ -37,36 +72,18 @@ private:
 	// Constant for pacman width
 	const int _SpriteWidth = 32;
 
+	Player* _pacman;
+	Enemy* _munchies[MUNCHIECOUNT];
+	Menu* _menu;
+
 	// Data to represent Pacman
-	Vector2* _pacmanPosition;
-	Rect* _pacmanSourceRect;
-	Texture2D* _pacmanTexture;
-	int _pacmanDirection;
-	int _pacmanFrame;
-	int _pacmanCurrentFrameTime;
 	const int _cPacmanFrameTime;
 
 	// Data to represent Munchie
-	int  _munchieFrameCount;
-	Rect* _munchieRect;
-	Texture2D* _munchieBlueTexture;
-	Texture2D* _munchieInvertedTexture;
 	const int _cMunchieFrameTime;
-	int _munchieFrame;
-	int _munchieCurrentFrameTime;
-
 
 	// Position for String
 	Vector2* _stringPosition;
-
-	//Data for Menu
-	Texture2D* _menuBackground;
-	Rect* _menuRectangle;
-	Vector2* _menuStringPosition;
-	bool _paused;
-	bool _pKeyDown;
-	bool _start;
-
 
 public:
 	/// <summary> Constructs the Pacman class. </summary>
