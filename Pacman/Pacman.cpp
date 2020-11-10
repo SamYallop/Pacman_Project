@@ -25,7 +25,7 @@ Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), 
 	for (y = 0; y < CHERRYCOUNT; y++)
 	{
 		_cherries[y] = new Cherry();
-		_cherries[y]->frameCount = rand() % 1;
+		_cherries[y]->frameCount1 = rand() % 1;
 		_cherries[y]->currentFrameTime = 0;
 		_cherries[y]->frame = rand() % 500 + 50;
 		_cherries[y]->redTexture = munchieTex;
@@ -35,8 +35,8 @@ Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), 
 	_menu = new Menu();
 
 	
-	_munchies[i]->frameCount = 0;
-	_cherries[y]->frameCount = 0;
+	//_munchies[i]->frameCount = 0;
+	//_cherries[y]->frameCount1 = 0;
 	_menu->paused = false;
 	_menu->pKeyDown = false;
 	// Initialise important Game aspects
@@ -113,6 +113,17 @@ void Pacman::LoadContent()
 		_munchies[i]->invertedTexture = new Texture2D();
 		_munchies[i]->invertedTexture->Load("Textures/MunchieInverted.tga", true);
 		_munchies[i]->rect = new Rect(100.0f, 450.0f, 12, 12);
+	}
+
+	// Load Cherry
+	int y;
+	for (y = 0; y < CHERRYCOUNT; y++)
+	{
+		_cherries[y]->redTexture = new Texture2D();
+		_cherries[y]->redTexture->Load("Textures/Cherry.png", true);
+		_cherries[y]->invertedTexture = new Texture2D();
+		_cherries[y]->invertedTexture->Load("Textures/CherryInverted.png", true);
+		_cherries[y]->rect = new Rect(50.0f, 450.0f, 32, 32);
 	}
 
 	// Set string position
@@ -290,10 +301,10 @@ void Pacman::UpdateCherries(int elapsedTime)
 
 		if (_cherries[i]->currentFrameTime > _cCherryFrameTime)
 		{
-			_cherries[i]->frameCount++;
+			_cherries[i]->frameCount1++;
 
-			if (_cherries[i]->frameCount >= 2)
-				_cherries[i]->frameCount = 0;
+			if (_cherries[i]->frameCount1 >= 2)
+				_cherries[i]->frameCount1 = 0;
 
 			_cherries[i]->currentFrameTime = 0;
 		}
@@ -370,7 +381,7 @@ void Pacman::Draw(int elapsedTime)
 	int y;
 	for (y = 0; y < CHERRYCOUNT; y++)
 	{
-		if (_cherries[y]->frameCount == 0)
+		if (_cherries[y]->frameCount1 == 0)
 		{
 			// Draws Blue Cherry
 			SpriteBatch::Draw(_cherries[y]->invertedTexture, _cherries[y]->rect, nullptr, Vector2::Zero, 1.0f, 0.0f, Color::White, SpriteEffect::NONE);

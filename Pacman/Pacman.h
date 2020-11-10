@@ -12,7 +12,7 @@
 #include "S2D/S2D.h"
 
 #define MUNCHIECOUNT 50
-#define CHERRYCOUNT 10
+#define CHERRYCOUNT 50
 
 // Reduces the amount of typing by including all classes in S2D namespace
 using namespace S2D;
@@ -42,7 +42,7 @@ struct Enemy
 
 struct Cherry
 {
-	int  frameCount;
+	int  frameCount1;
 	Rect* rect;
 	Texture2D* redTexture;
 	Texture2D* invertedTexture;
