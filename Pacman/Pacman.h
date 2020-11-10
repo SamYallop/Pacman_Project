@@ -12,6 +12,7 @@
 #include "S2D/S2D.h"
 
 #define MUNCHIECOUNT 50
+#define CHERRYCOUNT 10
 
 // Reduces the amount of typing by including all classes in S2D namespace
 using namespace S2D;
@@ -34,6 +35,16 @@ struct Enemy
 	int  frameCount;
 	Rect* rect;
 	Texture2D* blueTexture;
+	Texture2D* invertedTexture;
+	int frame;
+	int currentFrameTime;
+};
+
+struct Cherry
+{
+	int  frameCount;
+	Rect* rect;
+	Texture2D* redTexture;
 	Texture2D* invertedTexture;
 	int frame;
 	int currentFrameTime;
@@ -65,6 +76,7 @@ private:
 	//Update methods
 	void UpdatePacman(int elapsedTime);
 	void UpdateMunchies(int elapsedTime);
+	void UpdateCherries(int elapsedTime);
 
 	// Constant data for Game Variables
 	const float _cPacmanSpeed;
@@ -75,12 +87,16 @@ private:
 	Player* _pacman;
 	Enemy* _munchies[MUNCHIECOUNT];
 	Menu* _menu;
+	Cherry* _cherries[CHERRYCOUNT];
 
 	// Data to represent Pacman
 	const int _cPacmanFrameTime;
 
 	// Data to represent Munchie
 	const int _cMunchieFrameTime;
+
+	// Data to represent Cherry
+	const int _cCherryFrameTime;
 
 	// Position for String
 	Vector2* _stringPosition;

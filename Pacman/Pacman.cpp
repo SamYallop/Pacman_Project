@@ -2,7 +2,10 @@
 
 #include <sstream>
 
-Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), _cPacmanFrameTime(250), _cMunchieFrameTime(500)
+#include <time.h>
+
+
+Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), _cPacmanFrameTime(250), _cMunchieFrameTime(500), _cCherryFrameTime(500)
 {
 	// Local variable
 	int i;
@@ -16,12 +19,24 @@ Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), 
 		_munchies[i]->frame = rand() % 500 + 50;
 		_munchies[i]->blueTexture = munchieTex;
 	}
+	int y;
+	Texture2D* cherryTex = new Texture2D();
+	cherryTex->Load("Textures/Cherry.png", false);
+	for (y = 0; y < CHERRYCOUNT; y++)
+	{
+		_cherries[y] = new Cherry();
+		_cherries[y]->frameCount = rand() % 1;
+		_cherries[y]->currentFrameTime = 0;
+		_cherries[y]->frame = rand() % 500 + 50;
+		_cherries[y]->redTexture = munchieTex;
+	}
 	// Initialise member variables
 	_pacman = new Player();
 	_menu = new Menu();
 
 	
 	_munchies[i]->frameCount = 0;
+	_cherries[y]->frameCount = 0;
 	_menu->paused = false;
 	_menu->pKeyDown = false;
 	// Initialise important Game aspects
@@ -33,10 +48,13 @@ Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), 
 	_pacman->direction = 0;
 	_pacman->currentFrameTime = 0;
 	_pacman->frame = 0;
+	_pacman->speedMultiplier = 1.0f;
 	//_pacmanDirection = 0;
 	//_pacmanCurrentFrameTime = 0;
 	//_pacmanFrame = 0;
 	_munchies[i]->currentFrameTime = 0;
+	_cherries[y]->currentFrameTime = 0;
+
 }
 
 Pacman::~Pacman()
@@ -51,6 +69,17 @@ Pacman::~Pacman()
 	}
 	
 	delete[] _munchies;
+
+	//Clean up the Texture
+	int nCountC = 0;
+	for (nCountC = 0; nCountC < CHERRYCOUNT; nCountC++)
+	{
+		//delete _cherries[nCount]->position;
+		delete _cherries[nCountC]->rect;
+		delete _cherries[nCountC];
+	}
+
+	delete[] _cherries;
 	delete _pacman->texture;
 	delete _pacman->sourceRect;
 	delete _pacman->position;
@@ -70,7 +99,6 @@ void Pacman::LoadContent()
 	_pacman->position = new Vector2(350.0f, 350.0f);
 	_pacman->sourceRect = new Rect(0.0f, 0.0f, 32, 32);
 
-	
 	//_pacmanTexture = new Texture2D();
 	//_pacmanTexture->Load("Textures/Pacman.tga", false);
 	//_pacmanPosition = new Vector2(350.0f, 350.0f);
@@ -122,6 +150,10 @@ void Pacman::Update(int elapsedTime)
 			{
 				UpdateMunchies(elapsedTime);
 			}
+			for (int i = 0; i < CHERRYCOUNT; i++)
+			{
+				UpdateCherries(elapsedTime);
+			}
 			CheckViewportCollision();
 		}
 
@@ -131,32 +163,73 @@ void Pacman::Update(int elapsedTime)
 void Pacman::Input(int elapsedTime, Input::KeyboardState* state)
 {
 	Input::KeyboardState* keyboardState = Input::Keyboard::GetState();
+
+	float pacmanSpeed = _cPacmanSpeed * elapsedTime * _pacman->speedMultiplier;
+
+	// Speed Multiplier
+	if (keyboardState->IsKeyDown(Input::Keys::LEFTSHIFT))
+	{
+		// Apply Multiplier
+		_pacman->speedMultiplier = 2.0f;
+	}
+	else
+	{
+		// Reset Multiplier
+		_pacman->speedMultiplier = 1.0f;
+	}
 	
 	// Checks if Right Arrow key is pressed
 	if (keyboardState->IsKeyDown(Input::Keys::RIGHT))
 	{
-		_pacman->position->X += _cPacmanSpeed * elapsedTime; //Moves Pacman across X axis
+		_pacman->position->X += pacmanSpeed; //Moves Pacman across X axis
 		_pacman->direction = 0;
 	}
 
 	// Checks if Left Arrow key is pressed
 	else if (keyboardState->IsKeyDown(Input::Keys::LEFT))
 	{
-		_pacman->position->X += -_cPacmanSpeed * elapsedTime; //Moves Pacman across X axis
+		_pacman->position->X += -pacmanSpeed; //Moves Pacman across X axis
 		_pacman->direction = 2;
 	}
 
 	// Checks if Up Arrow key is pressed
 	else if (keyboardState->IsKeyDown(Input::Keys::UP))
 	{
-		_pacman->position->Y += -_cPacmanSpeed * elapsedTime; //Moves Pacman across Y axis
+		_pacman->position->Y += -pacmanSpeed; //Moves Pacman across Y axis
 		_pacman->direction = 3;
 	}
 
 	// Checks if Down Arrow key is pressed
 	else if (keyboardState->IsKeyDown(Input::Keys::DOWN))
 	{
-		_pacman->position->Y += _cPacmanSpeed * elapsedTime; //Moves Pacman across Y axis
+		_pacman->position->Y += pacmanSpeed; //Moves Pacman across Y axis
+		_pacman->direction = 1;
+	}
+	// Checks if D key is pressed
+	else if (keyboardState->IsKeyDown(Input::Keys::D))
+	{
+		_pacman->position->X += pacmanSpeed; //Moves Pacman across X axis
+		_pacman->direction = 0;
+	}
+
+	// Checks if Left Arrow key is pressed
+	else if (keyboardState->IsKeyDown(Input::Keys::A))
+	{
+		_pacman->position->X += -pacmanSpeed; //Moves Pacman across X axis
+		_pacman->direction = 2;
+	}
+
+	// Checks if W key is pressed
+	else if (keyboardState->IsKeyDown(Input::Keys::W))
+	{
+		_pacman->position->Y += -pacmanSpeed; //Moves Pacman across Y axis
+		_pacman->direction = 3;
+	}
+
+	// Checks if S key is pressed
+	else if (keyboardState->IsKeyDown(Input::Keys::S))
+	{
+		_pacman->position->Y += pacmanSpeed; //Moves Pacman across Y axis
 		_pacman->direction = 1;
 	}
 }
@@ -204,6 +277,25 @@ void Pacman::UpdateMunchies(int elapsedTime)
 				_munchies[i]->frameCount = 0;
 
 			_munchies[i]->currentFrameTime = 0;
+		}
+	}
+}
+
+void Pacman::UpdateCherries(int elapsedTime)
+{
+	int i;
+	for (i = 0; i < CHERRYCOUNT; i++)
+	{
+		_cherries[i]->currentFrameTime += elapsedTime;
+
+		if (_cherries[i]->currentFrameTime > _cCherryFrameTime)
+		{
+			_cherries[i]->frameCount++;
+
+			if (_cherries[i]->frameCount >= 2)
+				_cherries[i]->frameCount = 0;
+
+			_cherries[i]->currentFrameTime = 0;
 		}
 	}
 }
@@ -267,6 +359,28 @@ void Pacman::Draw(int elapsedTime)
 		{
 			// Draw Blue Munchie
 			SpriteBatch::Draw(_munchies[i]->blueTexture, _munchies[i]->rect, nullptr, Vector2::Zero, 1.0f, 0.0f, Color::White, SpriteEffect::NONE);
+
+			//_frameCount++;
+
+			//if (_frameCount >= 60)
+			//	_frameCount = 0;
+		}
+	}
+	
+	int y;
+	for (y = 0; y < CHERRYCOUNT; y++)
+	{
+		if (_cherries[y]->frameCount == 0)
+		{
+			// Draws Blue Cherry
+			SpriteBatch::Draw(_cherries[y]->invertedTexture, _cherries[y]->rect, nullptr, Vector2::Zero, 1.0f, 0.0f, Color::White, SpriteEffect::NONE);
+
+			//_frameCount++;
+		}
+		else
+		{
+			// Draw Red Cherry
+			SpriteBatch::Draw(_cherries[y]->redTexture, _cherries[y]->rect, nullptr, Vector2::Zero, 1.0f, 0.0f, Color::White, SpriteEffect::NONE);
 
 			//_frameCount++;
 
