@@ -28,7 +28,7 @@ Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), 
 		_cherries[y]->frameCount1 = rand() % 1;
 		_cherries[y]->currentFrameTime = 0;
 		_cherries[y]->frame = rand() % 500 + 50;
-		_cherries[y]->redTexture = munchieTex;
+		_cherries[y]->redTexture = cherryTex;
 	}
 	// Initialise member variables
 	_pacman = new Player();
@@ -120,7 +120,7 @@ void Pacman::LoadContent()
 	for (y = 0; y < CHERRYCOUNT; y++)
 	{
 		_cherries[y]->redTexture = new Texture2D();
-		_cherries[y]->redTexture->Load("Textures/Cherry.png", true);
+		_cherries[y]->redTexture->Load("Textures/CherrySingle.png", true);
 		_cherries[y]->invertedTexture = new Texture2D();
 		_cherries[y]->invertedTexture->Load("Textures/CherryInverted.png", true);
 		_cherries[y]->rect = new Rect(50.0f, 450.0f, 32, 32);
