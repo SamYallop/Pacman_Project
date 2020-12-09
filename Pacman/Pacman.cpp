@@ -29,6 +29,7 @@ Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), 
 		_cherries[y]->currentFrameTime = 0;
 		_cherries[y]->frame = rand() % 500 + 50;
 		_cherries[y]->redTexture = cherryTex;
+		_cherries[y]->rKeyDown = false;
 	}
 	// Initialise member variables
 	_pacman = new Player();
@@ -54,6 +55,14 @@ Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), 
 	//_pacmanFrame = 0;
 	_munchies[i]->currentFrameTime = 0;
 	_cherries[y]->currentFrameTime = 0;
+
+	//pacman
+	_pacman->dead = false;
+
+	//Initialise ghost character
+	_ghosts[0] = new MovingEnemy();
+	_ghosts[0]->direction = 0;
+	_ghosts[0]->speed = 0.2f;
 
 }
 
@@ -137,7 +146,11 @@ void Pacman::LoadContent()
 	_menu->stringPosition = new Vector2(Graphics::GetViewportWidth() / 2.0f,
 		Graphics::GetViewportHeight() / 2.0f);
 
-
+	//Initialise ghost character
+	_ghosts[0]->texture = new Texture2D;
+	_ghosts[0]->texture->Load("Textures/GhostBlue.png", false);
+	_ghosts[0]->position = new Vector2((rand()% Graphics::GetViewportWidth()), (rand() % Graphics::GetViewportHeight()));
+	_ghosts[0]->sourceRect = new Rect(0.0f, 0.0f, 20, 20);
 }
 
 void Pacman::Update(int elapsedTime)
@@ -157,6 +170,7 @@ void Pacman::Update(int elapsedTime)
 		{
 			Input(elapsedTime, keyboardState);
 			UpdatePacman(elapsedTime);
+			UpdateGhost(_ghosts[0], elapsedTime);
 			for (int i = 0; i < MUNCHIECOUNT; i++)
 			{
 				UpdateMunchies(elapsedTime);
@@ -176,6 +190,22 @@ void Pacman::Input(int elapsedTime, Input::KeyboardState* state)
 	Input::KeyboardState* keyboardState = Input::Keyboard::GetState();
 
 	float pacmanSpeed = _cPacmanSpeed * elapsedTime * _pacman->speedMultiplier;
+	
+	// Random Cherry
+	int cherryMove = 0;
+	if (keyboardState->IsKeyDown(Input::Keys::R) && cherryMove < 1)
+	{
+		int i = 1;
+		float cherryPosX = rand() % (Graphics::GetViewportWidth() - 32) + 32;
+		float cherryPosY = rand() % (Graphics::GetViewportHeight() - 32) + 32;
+		_cherries[i]->rect = new Rect(cherryPosX, cherryPosY, 32, 32);
+		cherryMove == 2;
+	}
+	if (keyboardState->IsKeyUp(Input::Keys::R))
+	{
+		cherryMove == 0;
+	}
+	
 
 	// Speed Multiplier
 	if (keyboardState->IsKeyDown(Input::Keys::LEFTSHIFT))
@@ -311,6 +341,37 @@ void Pacman::UpdateCherries(int elapsedTime)
 	}
 }
 
+void Pacman::UpdateGhost(MovingEnemy* ghost, int elapsedTime)
+{
+	if (ghost->direction == 0) //Moves Right
+	{
+		ghost->position->X += ghost->speed * elapsedTime;
+	}
+	else if (ghost->direction == 1) // Moves Left
+	{
+		ghost->position->X -= ghost->speed * elapsedTime;
+	}
+
+	if (ghost->position->X + ghost->sourceRect->Width >= Graphics::GetViewportWidth()) // Hits Right Edge
+	{
+		ghost->direction = 1; // Change direction
+	}
+	else if (ghost->position->X + ghost->sourceRect->Width <= 0) // Hits Right Edge
+	{
+		ghost->direction = 0; // Change direction
+	}
+}
+
+void Pacman::CheckGhostCollisions()
+{
+	// Local Variables
+	int i = 0;
+	int bottom1 = _pacman->position->Y + _pacman->sourceRect->Height;
+	int bottom2 = 0;
+	int left1 = _pacman->position->X;
+}
+
+
 void Pacman::CheckViewportCollision()
 {
 	// Checks if Pacman is trying to dissapear
@@ -353,7 +414,17 @@ void Pacman::Draw(int elapsedTime)
 	stream << "Pacman X: " << _pacman->position->X << " Y: " << _pacman->position->Y;
 
 	SpriteBatch::BeginDraw(); // Starts Drawing
-	SpriteBatch::Draw(_pacman->texture, _pacman->position, _pacman->sourceRect); // Draws Pacman
+	if (!_pacman->dead)
+	{
+		SpriteBatch::Draw(_pacman->texture, _pacman->position, _pacman->sourceRect); // Draws Pacman
+	}
+
+	//Texture2D* texture = new Texture2D();
+	//Vector2* position = new Vector2();
+	//position = new Vector2(450.0f, 450.0f);
+	//texture->Load("Textures/Munchie.png", true);
+	//Rect* sourceRect = new Rect(0.0f, 0.0f, 32, 32);
+	//SpriteBatch::Draw(texture, position, sourceRect);
 
 	int i;
 	

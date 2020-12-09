@@ -13,6 +13,7 @@
 
 #define MUNCHIECOUNT 50
 #define CHERRYCOUNT 50
+#define GHOSTCOUNT 1
 
 // Reduces the amount of typing by including all classes in S2D namespace
 using namespace S2D;
@@ -21,6 +22,7 @@ using namespace S2D;
 
 struct Player
 {
+	bool dead;
 	float speedMultiplier;
 	int currentFrameTime;
 	int direction;
@@ -48,6 +50,7 @@ struct Cherry
 	Texture2D* invertedTexture;
 	int frame;
 	int currentFrameTime;
+	bool rKeyDown;
 };
 
 struct Menu
@@ -59,6 +62,17 @@ struct Menu
 	bool pKeyDown;
 	bool start;
 };
+
+struct MovingEnemy
+{
+	Vector2* position;
+	Texture2D* texture;
+	Rect* sourceRect;
+	int direction;
+	float speed;
+};
+
+
 
 // Declares the Pacman class which inherits from the Game class.
 // This allows us to overload the Game class methods to help us
@@ -78,6 +92,8 @@ private:
 	void UpdateMunchies(int elapsedTime);
 	void UpdateCherries(int elapsedTime);
 
+	void CheckGhostCollisions();
+	void UpdateGhost(MovingEnemy*, int elapsedTime);
 	// Constant data for Game Variables
 	const float _cPacmanSpeed;
 
@@ -88,6 +104,7 @@ private:
 	Enemy* _munchies[MUNCHIECOUNT];
 	Menu* _menu;
 	Cherry* _cherries[CHERRYCOUNT];
+	MovingEnemy* _ghosts[GHOSTCOUNT];
 
 	// Data to represent Pacman
 	const int _cPacmanFrameTime;
