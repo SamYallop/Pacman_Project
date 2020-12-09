@@ -171,6 +171,7 @@ void Pacman::Update(int elapsedTime)
 			Input(elapsedTime, keyboardState);
 			UpdatePacman(elapsedTime);
 			UpdateGhost(_ghosts[0], elapsedTime);
+			CheckGhostCollisions();
 			for (int i = 0; i < MUNCHIECOUNT; i++)
 			{
 				UpdateMunchies(elapsedTime);
@@ -369,6 +370,26 @@ void Pacman::CheckGhostCollisions()
 	int bottom1 = _pacman->position->Y + _pacman->sourceRect->Height;
 	int bottom2 = 0;
 	int left1 = _pacman->position->X;
+	int left2 = 0;
+	int right1 = _pacman->position->X + _pacman->sourceRect->Width;
+	int right2 = 0;
+	int top1 = _pacman->position->Y;
+	int top2 = 0;
+
+	for (i = 0; i < GHOSTCOUNT; i++)
+	{
+		// Populate variables with ghost data
+		bottom2 = _ghosts[i]->position->Y + _ghosts[i]->sourceRect->Height;
+		left2 = _ghosts[i]->position->X;
+		right2 = _ghosts[i]->position->X + _ghosts[i]->sourceRect->Width;
+		top2 = _ghosts[i]->position->Y;
+
+		if ((bottom1 > top2) && (top1 < bottom2) && (right1 > left2) && (left1 <right2))
+		{
+			_pacman->dead = true;
+			i = GHOSTCOUNT;
+		}
+	}
 }
 
 
@@ -418,6 +439,8 @@ void Pacman::Draw(int elapsedTime)
 	{
 		SpriteBatch::Draw(_pacman->texture, _pacman->position, _pacman->sourceRect); // Draws Pacman
 	}
+
+	SpriteBatch::Draw(_ghosts[0]->texture, _ghosts[0]->position, _ghosts[0]->sourceRect);
 
 	//Texture2D* texture = new Texture2D();
 	//Vector2* position = new Vector2();
