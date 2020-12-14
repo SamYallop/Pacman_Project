@@ -60,6 +60,8 @@ Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), 
 	_pacman->dead = false;
 
 	//Initialise ghost character
+	Texture2D* ghostTex = new Texture2D();
+	ghostTex->Load("Textures/GhostBlue.png", false);
 	_ghosts[0] = new MovingEnemy();
 	_ghosts[0]->direction = 0;
 	_ghosts[0]->speed = 0.2f;
