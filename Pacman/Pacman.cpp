@@ -147,7 +147,7 @@ void Pacman::LoadContent()
 		Graphics::GetViewportHeight() / 2.0f);
 
 	//Initialise ghost character
-	_ghosts[0]->texture = new Texture2D;
+	_ghosts[0]->texture = new Texture2D();
 	_ghosts[0]->texture->Load("Textures/GhostBlue.png", false);
 	_ghosts[0]->position = new Vector2((rand()% Graphics::GetViewportWidth()), (rand() % Graphics::GetViewportHeight()));
 	_ghosts[0]->sourceRect = new Rect(0.0f, 0.0f, 20, 20);
