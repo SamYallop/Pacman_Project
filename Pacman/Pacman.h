@@ -10,10 +10,11 @@
 
 // Just need to include main header file
 #include "S2D/S2D.h"
+#include <iostream>
 
 #define MUNCHIECOUNT 50
 #define CHERRYCOUNT 50
-#define GHOSTCOUNT 1
+#define GHOSTCOUNT 10
 
 // Reduces the amount of typing by including all classes in S2D namespace
 using namespace S2D;
@@ -40,6 +41,8 @@ struct Enemy
 	Texture2D* invertedTexture;
 	int frame;
 	int currentFrameTime;
+	Vector2* position;
+	bool collected;
 };
 
 struct Cherry
@@ -70,6 +73,7 @@ struct MovingEnemy
 	Rect* sourceRect;
 	int direction;
 	float speed;
+	int  frameCount;
 };
 
 
@@ -90,7 +94,9 @@ private:
 	//Update methods
 	void UpdatePacman(int elapsedTime);
 	void UpdateMunchies(int elapsedTime);
+	void CheckMunchieCollisions();
 	void UpdateCherries(int elapsedTime);
+	void Music();
 
 	void CheckGhostCollisions();
 	void UpdateGhost(MovingEnemy*, int elapsedTime);
@@ -101,7 +107,7 @@ private:
 	const int _SpriteWidth = 32;
 
 	Player* _pacman;
-	Enemy* _munchies[MUNCHIECOUNT];
+	Enemy** _munchies;
 	Menu* _menu;
 	Cherry* _cherries[CHERRYCOUNT];
 	MovingEnemy* _ghosts[GHOSTCOUNT];
@@ -118,9 +124,19 @@ private:
 	// Position for String
 	Vector2* _stringPosition;
 
+	bool _musicStarted;
+
+	int munchieCount;
+
+	//bool _munchieCollected[munchieCount];
+
+	SoundEffect* _pop;
+
+	SoundEffect* _music;
+
 public:
 	/// <summary> Constructs the Pacman class. </summary>
-	Pacman(int argc, char* argv[]);
+	Pacman(int argc, char* argv[], int munchieCount);
 
 	/// <summary> Destroys any data associated with Pacman class. </summary>
 	virtual ~Pacman();

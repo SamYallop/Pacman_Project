@@ -5,19 +5,22 @@
 #include <time.h>
 
 
-Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), _cPacmanFrameTime(250), _cMunchieFrameTime(500), _cCherryFrameTime(500)
+Pacman::Pacman(int argc, char* argv[], int munchieCount) : Game(argc, argv), _cPacmanSpeed(0.1f), _cPacmanFrameTime(250), _cMunchieFrameTime(500), _cCherryFrameTime(500)
 {
+	_munchies = new Enemy*[munchieCount];
 	// Local variable
 	int i;
 	Texture2D* munchieTex = new Texture2D();
 	munchieTex->Load("Textures/Munchie.png", false);
-	for (i = 0; i < MUNCHIECOUNT; i++)
+	for (i = 0; i < munchieCount; i++)
 	{
 		_munchies[i] = new Enemy();
 		_munchies[i]->frameCount = rand() % 1;
 		_munchies[i]->currentFrameTime = 0;
 		_munchies[i]->frame = rand() % 500 + 50;
 		_munchies[i]->blueTexture = munchieTex;
+		_munchies[i]->currentFrameTime = 0;
+		_munchies[i]->collected = false;
 	}
 	int y;
 	Texture2D* cherryTex = new Texture2D();
@@ -30,6 +33,7 @@ Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), 
 		_cherries[y]->frame = rand() % 500 + 50;
 		_cherries[y]->redTexture = cherryTex;
 		_cherries[y]->rKeyDown = false;
+		_cherries[y]->currentFrameTime = 0;
 	}
 	// Initialise member variables
 	_pacman = new Player();
@@ -40,12 +44,6 @@ Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), 
 	//_cherries[y]->frameCount1 = 0;
 	_menu->paused = false;
 	_menu->pKeyDown = false;
-	// Initialise important Game aspects
-	Graphics::Initialise(argc, argv, this, 1024, 768, false, 25, 25,
-		"Pacman", 60);
-	Input::Initialise();
-	// Start the Game Loop - This calls Update and Draw in game loop
-	Graphics::StartGameLoop();
 	_pacman->direction = 0;
 	_pacman->currentFrameTime = 0;
 	_pacman->frame = 0;
@@ -53,18 +51,33 @@ Pacman::Pacman(int argc, char* argv[]) : Game(argc, argv), _cPacmanSpeed(0.1f), 
 	//_pacmanDirection = 0;
 	//_pacmanCurrentFrameTime = 0;
 	//_pacmanFrame = 0;
-	_munchies[i]->currentFrameTime = 0;
-	_cherries[y]->currentFrameTime = 0;
+	
+	_pop = new SoundEffect();
+	_music = new SoundEffect();
+
+	_musicStarted = false;
 
 	//pacman
 	_pacman->dead = false;
 
 	//Initialise ghost character
+	int x;
 	Texture2D* ghostTex = new Texture2D();
 	ghostTex->Load("Textures/GhostBlue.png", false);
-	_ghosts[0] = new MovingEnemy();
-	_ghosts[0]->direction = 0;
-	_ghosts[0]->speed = 0.2f;
+	for (x = 0; x < GHOSTCOUNT; x++)
+	{
+		_ghosts[x] = new MovingEnemy();
+		_ghosts[x]->direction = 0;
+		_ghosts[x]->speed = 0.2f;
+	}
+
+	// Initialise important Game aspects
+	Audio::Initialise();
+	Graphics::Initialise(argc, argv, this, 1024, 768, false, 25, 25,
+		"Pacman", 60);
+	Input::Initialise();
+	// Start the Game Loop - This calls Update and Draw in game loop
+	Graphics::StartGameLoop();
 
 }
 
@@ -72,7 +85,7 @@ Pacman::~Pacman()
 {
 	//Clean up the Texture
 	int nCount = 0;
-	for (nCount = 0; nCount < MUNCHIECOUNT; nCount++)
+	for (nCount = 0; nCount < munchieCount; nCount++)
 	{
 		//delete _munchies[nCount]->position;
 		delete _munchies[nCount]->rect;
@@ -95,6 +108,7 @@ Pacman::~Pacman()
 	delete _pacman->sourceRect;
 	delete _pacman->position;
 	delete _pacman;
+	delete _pop;
 	//delete _munchies[i]->blueTexture;
 	//delete _munchies[i]->invertedTexture;
 	//delete _munchies[i]->rect;
@@ -117,13 +131,14 @@ void Pacman::LoadContent()
 
 	// Load Munchie
 	int i;
-	for (i = 0; i < MUNCHIECOUNT; i++)
+	for (i = 0; i < munchieCount; i++)
 	{
 		_munchies[i]->blueTexture = new Texture2D();
 		_munchies[i]->blueTexture->Load("Textures/Munchie.tga", true);
 		_munchies[i]->invertedTexture = new Texture2D();
 		_munchies[i]->invertedTexture->Load("Textures/MunchieInverted.tga", true);
 		_munchies[i]->rect = new Rect(100.0f, 450.0f, 12, 12);
+		_munchies[i]->position = new Vector2((rand() % Graphics::GetViewportWidth()), (rand() % Graphics::GetViewportHeight()));
 	}
 
 	// Load Cherry
@@ -149,10 +164,17 @@ void Pacman::LoadContent()
 		Graphics::GetViewportHeight() / 2.0f);
 
 	//Initialise ghost character
-	_ghosts[0]->texture = new Texture2D();
-	_ghosts[0]->texture->Load("Textures/GhostBlue.png", false);
-	_ghosts[0]->position = new Vector2((rand()% Graphics::GetViewportWidth()), (rand() % Graphics::GetViewportHeight()));
-	_ghosts[0]->sourceRect = new Rect(0.0f, 0.0f, 20, 20);
+	int x;
+	for (x = 0; x < GHOSTCOUNT; x++)
+	{
+		_ghosts[x]->texture = new Texture2D();
+		_ghosts[x]->texture->Load("Textures/GhostBlue.png", false);
+		_ghosts[x]->position = new Vector2((rand() % Graphics::GetViewportWidth()), (rand() % Graphics::GetViewportHeight()));
+		_ghosts[x]->sourceRect = new Rect(0.0f, 0.0f, 20, 20);
+	}
+
+	_pop->Load("Sounds/pop.wav");
+	_music->Load("Sounds/music.wav");
 }
 
 void Pacman::Update(int elapsedTime)
@@ -174,7 +196,8 @@ void Pacman::Update(int elapsedTime)
 			UpdatePacman(elapsedTime);
 			UpdateGhost(_ghosts[0], elapsedTime);
 			CheckGhostCollisions();
-			for (int i = 0; i < MUNCHIECOUNT; i++)
+			Music();
+			for (int i = 0; i < munchieCount; i++)
 			{
 				UpdateMunchies(elapsedTime);
 			}
@@ -183,6 +206,7 @@ void Pacman::Update(int elapsedTime)
 				UpdateCherries(elapsedTime);
 			}
 			CheckViewportCollision();
+			CheckMunchieCollisions();
 		}
 
 	}
@@ -309,7 +333,7 @@ void Pacman::UpdatePacman(int elapsedTime)
 void Pacman::UpdateMunchies(int elapsedTime)
 {
 	int i;
-	for (i = 0; i < MUNCHIECOUNT; i++)
+	for (i = 0; i < munchieCount; i++)
 	{
 		_munchies[i]->currentFrameTime += elapsedTime;
 
@@ -346,22 +370,26 @@ void Pacman::UpdateCherries(int elapsedTime)
 
 void Pacman::UpdateGhost(MovingEnemy* ghost, int elapsedTime)
 {
-	if (ghost->direction == 0) //Moves Right
+	int i;
+	for (i = 0; i < GHOSTCOUNT; i++)
 	{
-		ghost->position->X += ghost->speed * elapsedTime;
-	}
-	else if (ghost->direction == 1) // Moves Left
-	{
-		ghost->position->X -= ghost->speed * elapsedTime;
-	}
+		if (_ghosts[i]->direction == 0) //Moves Right
+		{
+			_ghosts[i]->position->X += _ghosts[i]->speed * elapsedTime;
+		}
+		else if (_ghosts[i]->direction == 1) // Moves Left
+		{
+			_ghosts[i]->position->X -= _ghosts[i]->speed * elapsedTime;
+		}
 
-	if (ghost->position->X + ghost->sourceRect->Width >= Graphics::GetViewportWidth()) // Hits Right Edge
-	{
-		ghost->direction = 1; // Change direction
-	}
-	else if (ghost->position->X + ghost->sourceRect->Width <= 0) // Hits Right Edge
-	{
-		ghost->direction = 0; // Change direction
+		if (_ghosts[i]->position->X + _ghosts[i]->sourceRect->Width >= Graphics::GetViewportWidth()) // Hits Right Edge
+		{
+			_ghosts[i]->direction = 1; // Change direction
+		}
+		else if (_ghosts[i]->position->X + _ghosts[i]->sourceRect->Width <= 0) // Hits Right Edge
+		{
+			_ghosts[i]->direction = 0; // Change direction
+		}
 	}
 }
 
@@ -394,6 +422,67 @@ void Pacman::CheckGhostCollisions()
 	}
 }
 
+void Pacman::CheckMunchieCollisions()
+{
+	// Local Variables
+	int i = 0;
+	int bottom1 = _pacman->position->Y + _pacman->sourceRect->Height;
+	int bottom2 = 0;
+	int left1 = _pacman->position->X;
+	int left2 = 0;
+	int right1 = _pacman->position->X + _pacman->sourceRect->Width;
+	int right2 = 0;
+	int top1 = _pacman->position->Y;
+	int top2 = 0;
+
+	for (i = 0; i < munchieCount; i++)
+	{
+		// Populate variables with ghost data
+		bottom2 = _munchies[i]->position->Y + _munchies[i]->rect->Height;
+		left2 = _munchies[i]->position->X;
+		right2 = _munchies[i]->position->X + _munchies[i]->rect->Width;
+		top2 = _munchies[i]->position->Y;
+
+		if ((bottom1 > top2) && (top1 < bottom2) && (right1 > left2) && (left1 < right2) && _munchies[i]->collected == false)
+		{
+			//_pacman->dead = true;
+			if (!Audio::IsInitialised())
+			{
+				std::cout << "Audio is not initialised" << std::endl;
+			}
+			if (!_pop->IsLoaded())
+			{
+				std::cout << "_pop member sound efect has not loaded" << std::endl;
+			}
+			Audio::Play(_pop);
+			//_munchies[i]->blueTexture->Load("Textures/blank.png", true);
+			//_munchies[i]->invertedTexture->Load("Textures/blank.png", true);
+			_munchies[i]->collected = true;
+			i = munchieCount;
+		}
+	}
+}
+
+void Pacman::Music()
+{
+	if (_musicStarted == false)
+	{
+		if (!Audio::IsInitialised())
+		{
+			std::cout << "Audio is not initialised" << std::endl;
+		}
+		if (!_pop->IsLoaded())
+		{
+			std::cout << "_pop member sound effect has not loaded" << std::endl;
+		}
+		Audio::Play(_music);
+		_musicStarted = true;
+	}
+	if (_pacman->dead)
+	{
+		Audio::Stop(_music);
+	}
+}
 
 void Pacman::CheckViewportCollision()
 {
@@ -442,7 +531,12 @@ void Pacman::Draw(int elapsedTime)
 		SpriteBatch::Draw(_pacman->texture, _pacman->position, _pacman->sourceRect); // Draws Pacman
 	}
 
-	SpriteBatch::Draw(_ghosts[0]->texture, _ghosts[0]->position, _ghosts[0]->sourceRect);
+	int x;
+
+	for (x = 0; x < GHOSTCOUNT; x++)
+	{
+		SpriteBatch::Draw(_ghosts[x]->texture, _ghosts[x]->position, _ghosts[x]->sourceRect);
+	}
 
 	//Texture2D* texture = new Texture2D();
 	//Vector2* position = new Vector2();
@@ -453,24 +547,30 @@ void Pacman::Draw(int elapsedTime)
 
 	int i;
 	
-	for (i = 0; i < MUNCHIECOUNT; i++)
+	for (i = 0; i < munchieCount; i++)
 	{
-		if (_munchies[i]->frameCount == 0)
+		if (_munchies[i]->collected == false)
 		{
-			// Draws Red Munchie
-			SpriteBatch::Draw(_munchies[i]->invertedTexture, _munchies[i]->rect, nullptr, Vector2::Zero, 1.0f, 0.0f, Color::White, SpriteEffect::NONE);
+			if (_munchies[i]->frameCount == 0)
+			{
+				// Draws Red Munchie
+				SpriteBatch::Draw(_munchies[i]->invertedTexture, _munchies[i]->position, nullptr, Vector2::Zero, 1.0f, 0.0f, Color::White, SpriteEffect::NONE);
 
-			//_frameCount++;
+				//_frameCount++;
+			}
+			else
+			{
+				// Draw Blue Munchie
+				SpriteBatch::Draw(_munchies[i]->blueTexture, _munchies[i]->rect, nullptr, Vector2::Zero, 1.0f, 0.0f, Color::White, SpriteEffect::NONE);
+
+				//_frameCount++;
+
+				//if (_frameCount >= 60)
+				//	_frameCount = 0;
+			}
 		}
 		else
 		{
-			// Draw Blue Munchie
-			SpriteBatch::Draw(_munchies[i]->blueTexture, _munchies[i]->rect, nullptr, Vector2::Zero, 1.0f, 0.0f, Color::White, SpriteEffect::NONE);
-
-			//_frameCount++;
-
-			//if (_frameCount >= 60)
-			//	_frameCount = 0;
 		}
 	}
 	
