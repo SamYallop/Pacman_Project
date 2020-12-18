@@ -60,8 +60,6 @@ Pacman::Pacman(int argc, char* argv[], int munchieCount) : Game(argc, argv), _cP
 
 	_musicStarted = false;
 
-	collisionFrameTime = 0;
-
 	//pacman
 	_pacman->dead = false;
 
@@ -200,7 +198,7 @@ void Pacman::Update(int elapsedTime)
 		_menu->start = true;
 	}
 	
-	if (_menu->start)
+	if (_menu->start && !_menu->won && !_menu->lost)
 	{
 		CheckPaused(keyboardState, Input::Keys::P);
 		

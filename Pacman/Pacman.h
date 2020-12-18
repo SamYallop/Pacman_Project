@@ -139,15 +139,11 @@ private:
 	bool _musicStarted;
 
 	int munchiesCount;
-<<<<<<< HEAD
+
 
 	int munchieScore;
 
 	int playerLives;
-
-	int collisionFrameTime;
-=======
->>>>>>> 0609c81e9f276d4e1b08189c445ca90b59256c23
 
 	//bool _munchieCollected[munchieCount];
 
