@@ -126,7 +126,7 @@ private:
 
 	bool _musicStarted;
 
-	int munchieCount;
+	int munchiesCount;
 
 	//bool _munchieCollected[munchieCount];
 

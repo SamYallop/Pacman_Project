@@ -7,12 +7,13 @@
 
 Pacman::Pacman(int argc, char* argv[], int munchieCount) : Game(argc, argv), _cPacmanSpeed(0.1f), _cPacmanFrameTime(250), _cMunchieFrameTime(500), _cCherryFrameTime(500)
 {
-	_munchies = new Enemy*[munchieCount];
+	munchiesCount = munchieCount;//mucnhie count was not being carried over/assigned from user input. Had to change your munchieCount to munchiesCount so the compiler can tell the difference
+	_munchies = new Enemy*[munchiesCount];
 	// Local variable
 	int i;
 	Texture2D* munchieTex = new Texture2D();
 	munchieTex->Load("Textures/Munchie.png", false);
-	for (i = 0; i < munchieCount; i++)
+	for (i = 0; i < munchiesCount; i++)
 	{
 		_munchies[i] = new Enemy();
 		_munchies[i]->frameCount = rand() % 1;
@@ -85,7 +86,7 @@ Pacman::~Pacman()
 {
 	//Clean up the Texture
 	int nCount = 0;
-	for (nCount = 0; nCount < munchieCount; nCount++)
+	for (nCount = 0; nCount < munchiesCount; nCount++)
 	{
 		//delete _munchies[nCount]->position;
 		delete _munchies[nCount]->rect;
@@ -130,8 +131,9 @@ void Pacman::LoadContent()
 	//_pacmanSourceRect = new Rect(0.0f, 0.0f, 32, 32);
 
 	// Load Munchie
+	
 	int i;
-	for (i = 0; i < munchieCount; i++)
+	for (i = 0; i < munchiesCount; i++)
 	{
 		_munchies[i]->blueTexture = new Texture2D();
 		_munchies[i]->blueTexture->Load("Textures/Munchie.tga", true);
@@ -197,7 +199,7 @@ void Pacman::Update(int elapsedTime)
 			UpdateGhost(_ghosts[0], elapsedTime);
 			CheckGhostCollisions();
 			Music();
-			for (int i = 0; i < munchieCount; i++)
+			for (int i = 0; i < munchiesCount; i++)
 			{
 				UpdateMunchies(elapsedTime);
 			}
@@ -333,7 +335,7 @@ void Pacman::UpdatePacman(int elapsedTime)
 void Pacman::UpdateMunchies(int elapsedTime)
 {
 	int i;
-	for (i = 0; i < munchieCount; i++)
+	for (i = 0; i < munchiesCount; i++)
 	{
 		_munchies[i]->currentFrameTime += elapsedTime;
 
@@ -435,7 +437,7 @@ void Pacman::CheckMunchieCollisions()
 	int top1 = _pacman->position->Y;
 	int top2 = 0;
 
-	for (i = 0; i < munchieCount; i++)
+	for (i = 0; i < munchiesCount; i++)
 	{
 		// Populate variables with ghost data
 		bottom2 = _munchies[i]->position->Y + _munchies[i]->rect->Height;
@@ -458,7 +460,7 @@ void Pacman::CheckMunchieCollisions()
 			//_munchies[i]->blueTexture->Load("Textures/blank.png", true);
 			//_munchies[i]->invertedTexture->Load("Textures/blank.png", true);
 			_munchies[i]->collected = true;
-			i = munchieCount;
+			i = munchiesCount;
 		}
 	}
 }
@@ -547,7 +549,7 @@ void Pacman::Draw(int elapsedTime)
 
 	int i;
 	
-	for (i = 0; i < munchieCount; i++)
+	for (i = 0; i < munchiesCount; i++)
 	{
 		if (_munchies[i]->collected == false)
 		{
