@@ -13,7 +13,7 @@
 #include <iostream>
 
 #define MUNCHIECOUNT 50
-#define CHERRYCOUNT 50
+#define CHERRYCOUNT 3
 #define GHOSTCOUNT 10
 
 // Reduces the amount of typing by including all classes in S2D namespace
@@ -54,6 +54,8 @@ struct Cherry
 	int frame;
 	int currentFrameTime;
 	bool rKeyDown;
+	Vector2* position;
+	bool collected;
 };
 
 struct Menu
@@ -64,6 +66,8 @@ struct Menu
 	bool paused;
 	bool pKeyDown;
 	bool start;
+	bool won;
+	bool lost;
 };
 
 struct MovingEnemy
@@ -96,9 +100,10 @@ private:
 	void UpdateMunchies(int elapsedTime);
 	void CheckMunchieCollisions();
 	void UpdateCherries(int elapsedTime);
+	void CheckCherryCollisions();
 	void Music();
 
-	void CheckGhostCollisions();
+	void CheckGhostCollisions(int elapsedTime);
 	void UpdateGhost(MovingEnemy*, int elapsedTime);
 	// Constant data for Game Variables
 	const float _cPacmanSpeed;
@@ -121,12 +126,25 @@ private:
 	// Data to represent Cherry
 	const int _cCherryFrameTime;
 
+
 	// Position for String
 	Vector2* _stringPosition;
 
+	// Position for Score
+	Vector2* _scorePosition;
+
+	// Position for Lives
+	Vector2* _livesPosition;
+
 	bool _musicStarted;
 
-	int munchieCount;
+	int munchiesCount;
+
+	int munchieScore;
+
+	int playerLives;
+
+	int collisionFrameTime;
 
 	//bool _munchieCollected[munchieCount];
 
